@@ -87,7 +87,7 @@ class MLPPolicy(BasePolicy):
         # HINT1: you will need to call self.sess.run
         # HINT2: the tensor we're interested in evaluating is self.sample_ac
         # HINT3: in order to run self.sample_ac, it will need observation fed into the feed_dict
-        return TODO
+        return self.sess.run(self.sample_ac, feed_dict={self.observations_pl: observation})
 
     # update/train this policy
     def update(self, observations, actions):
@@ -126,5 +126,6 @@ class MLPPolicySL(MLPPolicy):
 
     def update(self, observations, actions):
         assert(self.training, 'Policy must be created with training=True in order to perform training updates...')
-        self.sess.run(self.train_op, feed_dict={self.observations_pl: observations, self.acs_labels_na: actions})
+        _, loss = self.sess.run((self.train_op, self.loss), feed_dict={self.observations_pl: observations, self.acs_labels_na: actions})
+        return loss
 
