@@ -158,7 +158,8 @@ class RL_Trainer(object):
 
                 # collect data, batch_size is the number of transitions you want to collect.
         if itr == 0:
-            loaded_paths = pickle.load(load_initial_expertdata)
+            with open(load_initial_expertdata, "rb") as f:
+                loaded_paths = pickle.load(f)
             return loaded_paths, 0, None
 
         # TODO collect data to be used for training
@@ -180,6 +181,7 @@ class RL_Trainer(object):
 
     def train_agent(self):
         print('\nTraining agent using sampled data from replay buffer...')
+        losses = []
         for train_step in range(self.params['num_agent_train_steps_per_iter']):
 
             # TODO sample some data from the data buffer
@@ -191,7 +193,9 @@ class RL_Trainer(object):
             # HINT: use the agent's train function
             # HINT: print or plot the loss for debugging!
             loss = self.agent.train(ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch)
-            print('Step {:} loss: {:}'.format(train_step, loss))
+            losses.append(loss)
+        print("Average loss: {:}".format(sum(losses) / len(losses)))
+
 
     def do_relabel_with_expert(self, expert_policy, paths):
         print("\nRelabelling collected observations with labels from an expert policy...")
