@@ -121,7 +121,7 @@ class MLPPolicySL(MLPPolicy):
         # TODO define the loss that will be used to train this policy
         # HINT1: remember that we are doing supervised learning
         # HINT2: use tf.losses.mean_squared_error
-        self.loss = TODO
+        self.loss = tf.losses.mean_squared_error(true_actions, predicted_actions)
         self.train_op = tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss)
 
     def update(self, observations, actions):
