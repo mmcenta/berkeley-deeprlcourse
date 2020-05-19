@@ -1,15 +1,32 @@
 import os
+import pickle
+from collections import defaultdict
+
 from tensorboardX import SummaryWriter
 import numpy as np
 
 class Logger:
     def __init__(self, log_dir, n_logged_samples=10, summary_writer=None):
-        self._log_dir = log_dir
+        os.makedirs(log_dir, exist_ok=True)
+
         print('########################')
         print('logging outputs to ', log_dir)
         print('########################')
+        self._log_dir = log_dir
+        self._kvs = defaultdict(list)
         self._n_logged_samples = n_logged_samples
         self._summ_writer = SummaryWriter(log_dir, flush_secs=1, max_queue=1)
+
+    def log_kv(self, key, value):
+        self._kvs['{}'.format(key)].append(value)
+
+    def log_kvs(self, d):
+        for k, v in d.items():
+            self.log_kv(k, v)
+
+    def dump_kvs(self):
+        with open(os.path.join(self._log_dir, "log.pkl"), "wb") as f:
+            pickle.dump(self._kvs, f)
 
     def log_scalar(self, scalar, name, step_):
         self._summ_writer.add_scalar('{}'.format(name), scalar, step_)
