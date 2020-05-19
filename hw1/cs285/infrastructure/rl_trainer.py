@@ -126,7 +126,6 @@ class RL_Trainer(object):
 
             # log/save
             if self.log_video or self.log_metrics:
-
                 # perform logging
                 print('\nBeginning logging procedure...')
                 self.perform_logging(itr, paths, eval_policy, train_video_paths)
@@ -134,6 +133,9 @@ class RL_Trainer(object):
                 # save policy
                 print('\nSaving agent\'s actor...')
                 self.agent.actor.save(self.params['logdir'] + '/policy_itr_'+str(itr))
+
+                # dump key-value pairs for inspection
+                self.logger.dump_kvs()
 
     ####################################
     ####################################
@@ -200,9 +202,10 @@ class RL_Trainer(object):
                 self.logger.log_scalar(loss, "Train_Loss", itr * num_train_steps + train_step)
 
         if self.log_metrics:
-            avg_loss = sum(losses) / len(losses)
-            print("Train_AverageLoss : {:}".format(avg_loss))
-            self.logger.log_scalar(avg_loss, "Train_AverageLoss", itr)
+            key, value = "Train_AverageLoss", sum(losses) / len(losses)
+            print("{:} : {:}".format(key, value))
+            self.logger.log_scalar(value, key, itr)
+            self.logger.log_kv(key, value)
 
 
     def do_relabel_with_expert(self, expert_policy, paths):
@@ -272,6 +275,7 @@ class RL_Trainer(object):
             for key, value in logs.items():
                 print('{} : {}'.format(key, value))
                 self.logger.log_scalar(value, key, itr)
+                self.logger.log_kv(key, value)
             print('Done logging...\n\n')
 
             self.logger.flush()
