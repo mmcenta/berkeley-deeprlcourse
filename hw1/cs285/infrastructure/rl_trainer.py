@@ -122,7 +122,7 @@ class RL_Trainer(object):
             self.agent.add_to_replay_buffer(paths)
 
             # train agent (using sampled data from replay buffer)
-            self.train_agent() ## TODO implement this function below
+            self.train_agent(itr) ## TODO implement this function below
 
             # log/save
             if self.log_video or self.log_metrics:
@@ -179,10 +179,11 @@ class RL_Trainer(object):
         return paths, envsteps_this_batch, train_video_paths
 
 
-    def train_agent(self):
+    def train_agent(self, itr):
         print('\nTraining agent using sampled data from replay buffer...')
+        num_train_steps = self.params['num_agent_train_steps_per_iter']
         losses = []
-        for train_step in range(self.params['num_agent_train_steps_per_iter']):
+        for train_step in range(num_train_steps):
 
             # TODO sample some data from the data buffer
             # HINT1: use the agent's sample function
@@ -194,7 +195,14 @@ class RL_Trainer(object):
             # HINT: print or plot the loss for debugging!
             loss = self.agent.train(ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch)
             losses.append(loss)
-        print("Average loss: {:}".format(sum(losses) / len(losses)))
+
+            if self.log_metrics:
+                self.logger.log_scalar(loss, "Train_Loss", itr * num_train_steps + train_step)
+
+        if self.log_metrics:
+            avg_loss = sum(losses) / len(losses)
+            print("Train_AverageLoss : {:}".format(avg_loss))
+            self.logger.log_scalar(avg_loss, "Train_AverageLoss", itr)
 
 
     def do_relabel_with_expert(self, expert_policy, paths):
@@ -213,7 +221,6 @@ class RL_Trainer(object):
     ####################################
 
     def perform_logging(self, itr, paths, eval_policy, train_video_paths):
-
         # collect eval trajectories, for logging
         print("\nCollecting data for eval...")
         eval_paths, eval_envsteps_this_batch = sample_trajectories(self.env, eval_policy, self.params['eval_batch_size'], self.params['ep_len'])
@@ -256,7 +263,6 @@ class RL_Trainer(object):
 
             logs["Train_EnvstepsSoFar"] = self.total_envsteps
             logs["TimeSinceStart"] = time.time() - self.start_time
-
 
             if itr == 0:
                 self.initial_return = np.mean(train_returns)
