@@ -276,6 +276,10 @@ class RL_Trainer(object):
                 print('{} : {}'.format(key, value))
                 self.logger.log_scalar(value, key, itr)
                 self.logger.log_kv(key, value)
+
+            # log full returns
+            self.logger.log_kv('Eval_Returns', eval_returns)
+            self.logger.log_kv('Train_Returns', train_returns)
             print('Done logging...\n\n')
 
             self.logger.flush()
