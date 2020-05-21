@@ -88,6 +88,10 @@ class RL_Trainer(object):
         :param expert_policy:
         """
 
+        # log run parameters
+        self.logger.log_kv('Params', self.params)
+        self.logger.flush()
+
         # init vars at beginning of training
         self.total_envsteps = 0
         self.start_time = time.time()
@@ -280,6 +284,7 @@ class RL_Trainer(object):
             # log full returns
             self.logger.log_kv('Eval_Returns', eval_returns)
             self.logger.log_kv('Train_Returns', train_returns)
+
             print('Done logging...\n\n')
 
             self.logger.flush()
