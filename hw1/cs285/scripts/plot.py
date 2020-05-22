@@ -12,10 +12,9 @@ import seaborn as sns
 ALL_ENVS = ('Ant-v2', 'HalfCheetah-v2', 'Hopper-v2', 'Humanoid-v2', 'Walker2d')
 DEFAULT_LOG_DIR = "./cs285/data"
 DEFAULT_IMAGE_DIR = "./cs285/images"
-EPS = 1e-8
 
 
-def plot_question2(
+def plot_s1q2(
         logdir,
         imagedir,
         exp_name='s1q2',
@@ -51,7 +50,7 @@ def plot_question2(
     bc_avgs, bc_stds = np.array(bc_avgs), np.array(bc_stds)
     expert_avgs = np.array(expert_avgs)
 
-    # plot figure
+    # plot normalized bc scores per environment
     scale = 100. / expert_avgs
     normalized_avgs = scale * bc_avgs
     normalized_stds = scale * bc_stds
@@ -68,7 +67,7 @@ def plot_question2(
     plt.savefig(os.path.join(imagedir, "{}.png".format(exp_name)))
 
 
-def plot_question3(
+def plot_s1q3(
         logdir,
         imagedir,
         env_id,
@@ -106,17 +105,65 @@ def plot_question3(
 
     plt.savefig(os.path.join(imagedir, '{}.png'.format(exp_name)))
 
+def plot_s2q2(
+        logdir,
+        imagedir,
+        env_id,
+        exp_name="s2q2",
+    ):
+    # gather relevant data from logs
+    def load_kvs(prefix, latest=True):
+        rundirs = glob.glob(os.path.join(logdir, prefix))
+        if len(rundirs) == 0:
+            raise ValueError("Log directory with prefix {} not found.".format(prefix))
+        kvs = []
+        for rundir in rundirs:
+            with open(os.path.join(rundir, "log.pkl"), "rb") as f:
+                kvs.append(pickle.load(f))
+        return kvs
+
+    bc_kvs = load_kvs("bc_{}_{}*".format(exp_name, env_id))[-1] # get latest if multiple
+    dagger_kvs = load_kvs("dagger_{}_{}*".format(exp_name, env_id))
+
+    bc_score = bc_kvs['Eval_AverageReturn'][-1]
+    expert_score = bc_kvs['Train_AverageReturn'][-1]
+    returns = []
+    iterations = []
+    for kvs in dagger_kvs:
+        for i, r in enumerate(kvs['Eval_Returns']):
+            returns.extend(r)
+            iterations.extend([i] * len(r))
+
+    # plot dagger performance per iteration
+    fig = plt.figure()
+
+    lp = sns.lineplot(x=iterations, y=returns, ci="sd",
+        label="DAgger")
+    plt.axhline(y=bc_score, color='gray', linestyle='--', zorder=-1,
+        label='Behaviour Cloning')
+    plt.axhline(y=expert_score, color='black', linestyle='--', zorder=-1,
+        label='Expert')
+    plt.ylabel('Return')
+    plt.xlabel('Iteration')
+    plt.title('DAgger results on {}.'.format(env_id))
+    plt.legend()
+
+    plt.savefig(os.path.join(imagedir, '{}.png'.format(exp_name)))
+
 
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--logdir', type=str, default=DEFAULT_LOG_DIR)
     parser.add_argument('--imagedir', type=str, default=DEFAULT_IMAGE_DIR)
-    parser.add_argument('--q2-exp-name', type=str, default="s1q2")
-    parser.add_argument('--q3-exp-name', type=str, default="s1q3")
-    parser.add_argument('--q3-env-id', type=str, default='Hopper-v2')
-    parser.add_argument('--q3-param', type=str, default="num_agent_train_steps_per_iter")
+    parser.add_argument('--s1q2-exp-name', type=str, default="s1q2")
+    parser.add_argument('--s1q3-exp-name', type=str, default="s1q3")
+    parser.add_argument('--s1q3-env-id', type=str, default='Hopper-v2')
+    parser.add_argument('--s1q3-param', type=str, default="num_agent_train_steps_per_iter")
+    parser.add_argument('--s2q2-exp-name', type=str, default="s2q2")
+    parser.add_argument('--s2q2-env-id', type=str, default="Hopper-v2")
     args = parser.parse_args()
 
-    plot_question2(args.logdir, args.imagedir, exp_name=args.q2_exp_name)
-    plot_question3(args.logdir, args.imagedir, args.q3_env_id, args.q3_param, exp_name=args.q3_exp_name)
+    plot_s1q2(args.logdir, args.imagedir, exp_name=args.s1q2_exp_name)
+    plot_s1q3(args.logdir, args.imagedir, args.s1q3_env_id, args.s1q3_param, exp_name=args.s1q3_exp_name)
+    plot_s2q2(args.logdir, args.imagedir, args.s2q2_env_id, exp_name=args.s2q2_exp_name)
