@@ -1,4 +1,4 @@
-# HW1
+# Homework 1
 
 To run all experiments and generate the plots, run the `run.sh` script from this directory:
 
