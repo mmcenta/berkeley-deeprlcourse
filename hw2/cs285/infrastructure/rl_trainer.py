@@ -177,14 +177,10 @@ class RL_Trainer(object):
         losses = []
         for train_step in range(num_train_steps):
 
-            # TODO sample some data from the data buffer
-            # HINT1: use the agent's sample function
-            # HINT2: how much data = self.params['train_batch_size']
+            # sample some data from the data buffer
             ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = self.agent.sample(self.params['train_batch_size'])
 
-            # TODO use the sampled data for training
-            # HINT: use the agent's train function
-            # HINT: print or plot the loss for debugging!
+            # use the sampled data for training
             loss = self.agent.train(ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch)
             losses.append(loss)
 
