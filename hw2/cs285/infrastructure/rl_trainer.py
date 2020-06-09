@@ -121,7 +121,7 @@ class RL_Trainer(object):
             self.agent.add_to_replay_buffer(paths)
 
             # train agent (using sampled data from replay buffer)
-            self.train_agent()
+            self.train_agent(itr)
 
             # log/save
             if self.log_video or self.log_metrics:
@@ -149,9 +149,8 @@ class RL_Trainer(object):
             envsteps_this_batch: the sum over the numbers of environment steps in paths
             train_video_paths: paths which also contain videos for visualization purposes
         """
-
         # TODO: GETTHIS from HW1
-        if itr == 0:
+        if itr == 0 and load_initial_expertdata:
             with open(load_initial_expertdata, "rb") as f:
                 loaded_paths = pickle.load(f)
             return loaded_paths, 0, None
