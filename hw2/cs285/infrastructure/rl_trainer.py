@@ -91,6 +91,9 @@ class RL_Trainer(object):
         self.total_envsteps = 0
         self.start_time = time.time()
 
+        # log run information
+        self.logger.log_kv("ExperimentName", self.params['exp_name'])
+
         for itr in range(n_iter):
             print("\n\n********** Iteration %i ************"%itr)
 
@@ -253,7 +256,6 @@ class RL_Trainer(object):
             logs["Train_EnvstepsSoFar"] = self.total_envsteps
             logs["TimeSinceStart"] = time.time() - self.start_time
 
-
             if itr == 0:
                 self.initial_return = np.mean(train_returns)
             logs["Initial_DataCollection_AverageReturn"] = self.initial_return
@@ -262,6 +264,8 @@ class RL_Trainer(object):
             for key, value in logs.items():
                 print('{} : {}'.format(key, value))
                 self.logger.log_scalar(value, key, itr)
+                self.logger.log_kv(key, value) # not for tensorboard
             print('Done logging...\n\n')
 
             self.logger.flush()
+            self.logger.dump_kvs()

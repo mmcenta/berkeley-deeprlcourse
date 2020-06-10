@@ -7,7 +7,7 @@ from cs285.agents.pg_agent import PGAgent
 class PG_Trainer(object):
 
     def __init__(self, params):
-    
+
         #####################
         ## SET AGENT PARAMS
         #####################
@@ -45,7 +45,7 @@ class PG_Trainer(object):
     def run_training_loop(self):
 
         self.rl_trainer.run_training_loop(
-            self.params['n_iter'], 
+            self.params['n_iter'],
             collect_policy = self.rl_trainer.agent.actor,
             eval_policy = self.rl_trainer.agent.actor,
             )
@@ -58,7 +58,7 @@ def main():
     parser.add_argument('--env_name', type=str)
     parser.add_argument('--exp_name', type=str, default='todo')
     parser.add_argument('--n_iter', '-n', type=int, default=200)
-        
+
     parser.add_argument('--reward_to_go', '-rtg', action='store_true')
     parser.add_argument('--nn_baseline', action='store_true')
     parser.add_argument('--dont_standardize_advantages', '-dsa', action='store_true')
@@ -84,9 +84,9 @@ def main():
 
     # convert to dictionary
     params = vars(args)
-    
+
     # for this assignment, we train on everything we recently collected
-    # so making train_batch_size=batch_size 
+    # so making train_batch_size=batch_size
     params['train_batch_size']=params['batch_size']
 
     ##################################
@@ -100,6 +100,7 @@ def main():
     if not (os.path.exists(data_path)):
         os.makedirs(data_path)
 
+    params['exp_name'] = args.exp_name
     logdir = logdir_prefix + args.exp_name + '_' + args.env_name + '_' + time.strftime("%d-%m-%Y_%H-%M-%S")
     logdir = os.path.join(data_path, logdir)
     params['logdir'] = logdir
