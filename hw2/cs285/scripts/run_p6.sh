@@ -1,0 +1,2 @@
+python cs285/scripts/run_hw2_policy_gradient.py --env_name LunarLanderContinuous-v2 --ep_len 1000 --discount 0.99 -n 100 -l 2 -s 64 -b 40000 -lr 0.005 -rt --nn_baseline --exp_name ll_b40000_r0.005
+pythonw cs285/scripts/plot.py -pb 6 -ws 3
